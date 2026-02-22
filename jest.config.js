@@ -3,13 +3,20 @@ module.exports = {
   testEnvironment: 'jsdom',
   transform: {
     '^.+\\.tsx?$': ['ts-jest', {
-      tsconfig: 'tsconfig.json',
-      jsx: 'react-jsx',
+      tsconfig: {
+        jsx: 'react-jsx',
+        esModuleInterop: true,
+        module: 'commonjs',
+        moduleResolution: 'node',
+        paths: { '@/*': ['./*'] },
+      },
     }],
   },
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
+    '^framer-motion$': '<rootDir>/__mocks__/framer-motion.ts',
+    '^lucide-react$': '<rootDir>/__mocks__/lucide-react.ts',
   },
-  setupFilesAfterSetup: ['<rootDir>/jest.setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/.next/', '<rootDir>/e2e/'],
 }
