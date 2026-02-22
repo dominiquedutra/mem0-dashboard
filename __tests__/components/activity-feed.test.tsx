@@ -1,12 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react"
 import ActivityFeed from "@/components/activity-feed"
 
-beforeEach(() => {
-  jest.useFakeTimers()
-})
-
 afterEach(() => {
-  jest.useRealTimers()
   jest.restoreAllMocks()
 })
 

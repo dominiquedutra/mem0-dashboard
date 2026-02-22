@@ -7,9 +7,9 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 
 export default function StorageStatsView({
-  refreshInterval = 60000,
+  refreshKey,
 }: {
-  refreshInterval?: number
+  refreshKey?: number
 }) {
   const [stats, setStats] = useState<StorageStats | null>(null)
   const [loading, setLoading] = useState(true)
@@ -31,9 +31,7 @@ export default function StorageStatsView({
     }
 
     fetchStats()
-    const timer = setInterval(fetchStats, refreshInterval)
-    return () => clearInterval(timer)
-  }, [refreshInterval])
+  }, [refreshKey])
 
   if (loading) {
     return (

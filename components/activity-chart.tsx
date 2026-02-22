@@ -24,7 +24,7 @@ const AGENT_COLORS: Record<string, string> = {
 type TimeRange = "24h" | "7d"
 
 interface ActivityChartProps {
-  refreshInterval?: number
+  refreshKey?: number
 }
 
 function formatXLabel(time: string, granularity: string): string {
@@ -88,7 +88,7 @@ function CustomTooltip({
 }
 
 export default function ActivityChart({
-  refreshInterval = 60000,
+  refreshKey,
 }: ActivityChartProps) {
   const [range, setRange] = useState<TimeRange>("7d")
   const [buckets, setBuckets] = useState<TimelineBucket[]>([])
@@ -124,9 +124,7 @@ export default function ActivityChart({
   useEffect(() => {
     setLoading(true)
     fetchTimeline()
-    const timer = setInterval(fetchTimeline, refreshInterval)
-    return () => clearInterval(timer)
-  }, [fetchTimeline, refreshInterval])
+  }, [fetchTimeline, refreshKey])
 
   // Format data for Recharts — ensure agent keys exist in every bucket
   const chartData = buckets.map((bucket) => {

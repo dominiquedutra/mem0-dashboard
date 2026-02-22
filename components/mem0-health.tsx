@@ -20,9 +20,9 @@ const agentTextColor: Record<string, string> = {
 }
 
 export default function Mem0HealthView({
-  refreshInterval = 60000,
+  refreshKey,
 }: {
-  refreshInterval?: number
+  refreshKey?: number
 }) {
   const [health, setHealth] = useState<Mem0Health | null>(null)
   const [loading, setLoading] = useState(true)
@@ -44,9 +44,7 @@ export default function Mem0HealthView({
     }
 
     fetchHealth()
-    const timer = setInterval(fetchHealth, refreshInterval)
-    return () => clearInterval(timer)
-  }, [refreshInterval])
+  }, [refreshKey])
 
   if (loading) {
     return (

@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 interface ActivityFeedProps {
-  refreshInterval?: number
+  refreshKey?: number
 }
 
 const agentBadgeStyles: Record<string, string> = {
@@ -19,7 +19,7 @@ const agentBadgeStyles: Record<string, string> = {
 }
 
 export default function ActivityFeed({
-  refreshInterval = 60000,
+  refreshKey,
 }: ActivityFeedProps) {
   const [memories, setMemories] = useState<Memory[]>([])
   const [loading, setLoading] = useState(true)
@@ -38,9 +38,7 @@ export default function ActivityFeed({
     }
 
     fetchRecent()
-    const timer = setInterval(fetchRecent, refreshInterval)
-    return () => clearInterval(timer)
-  }, [refreshInterval])
+  }, [refreshKey])
 
   const items = memories.slice(0, 10)
 

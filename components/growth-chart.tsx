@@ -76,9 +76,9 @@ function CustomTooltip({
 }
 
 export default function GrowthChart({
-  refreshInterval = 60000,
+  refreshKey,
 }: {
-  refreshInterval?: number
+  refreshKey?: number
 }) {
   const [range, setRange] = useState<TimeRange>("30d")
   const [data, setData] = useState<GrowthResponse | null>(null)
@@ -115,9 +115,7 @@ export default function GrowthChart({
   useEffect(() => {
     setLoading(true)
     fetchGrowth()
-    const timer = setInterval(fetchGrowth, refreshInterval)
-    return () => clearInterval(timer)
-  }, [fetchGrowth, refreshInterval])
+  }, [fetchGrowth, refreshKey])
 
   // Build chart data: one row per date with per-agent added counts
   const chartData = data
