@@ -38,7 +38,7 @@ export async function GET() {
     // 2. RAM from Prometheus /metrics
     let qdrantRssMb = 0
     try {
-      const metricsRes = await fetch(`${qdrantUrl}/metrics`)
+      const metricsRes = await fetch(`${qdrantUrl}/metrics`, { cache: "no-store" })
       if (metricsRes.ok) {
         const metricsText = await metricsRes.text()
         qdrantRssMb = parseRssMb(metricsText)

@@ -144,7 +144,7 @@ function toDateString(d: Date): string {
 }
 
 async function fetchTelemetry(qdrantUrl: string): Promise<number> {
-  const res = await fetch(`${qdrantUrl}/telemetry`)
+  const res = await fetch(`${qdrantUrl}/telemetry`, { cache: "no-store" })
   const data = await res.json()
   return (
     data?.result?.requests?.rest?.responses?.PUT?.["200"] ?? 0

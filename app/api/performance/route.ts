@@ -63,7 +63,7 @@ export async function GET() {
   let metricsText: string | null = null
 
   try {
-    const telemetryRes = await fetch(`${qdrantUrl}/telemetry`)
+    const telemetryRes = await fetch(`${qdrantUrl}/telemetry`, { cache: "no-store" })
     if (!telemetryRes.ok) throw new Error(`Telemetry returned ${telemetryRes.status}`)
     telemetryData = await telemetryRes.json()
   } catch (error) {
@@ -72,7 +72,7 @@ export async function GET() {
   }
 
   try {
-    const metricsRes = await fetch(`${qdrantUrl}/metrics`)
+    const metricsRes = await fetch(`${qdrantUrl}/metrics`, { cache: "no-store" })
     if (!metricsRes.ok) throw new Error(`Metrics returned ${metricsRes.status}`)
     metricsText = await metricsRes.text()
   } catch (error) {

@@ -14,7 +14,7 @@ export async function GET() {
 
     let version = "unknown"
     try {
-      const telemetryRes = await fetch(`${qdrantUrl}/telemetry`)
+      const telemetryRes = await fetch(`${qdrantUrl}/telemetry`, { cache: "no-store" })
       if (telemetryRes.ok) {
         const telemetry = await telemetryRes.json()
         version = telemetry?.result?.app?.version ?? "unknown"
