@@ -14,7 +14,7 @@ interface MemoryListProps {
   agent: string | null
 }
 
-const PAGE_SIZE = 50
+const PAGE_SIZE = 20
 
 export default function MemoryList({ agent }: MemoryListProps) {
   const [data, setData] = useState<MemoriesResponse | null>(null)
@@ -118,25 +118,45 @@ export default function MemoryList({ agent }: MemoryListProps) {
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between pt-4">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={offset === 0}
-            onClick={() => setOffset(Math.max(0, offset - PAGE_SIZE))}
-          >
-            Prev
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={offset === 0}
+              onClick={() => setOffset(0)}
+            >
+              First
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={offset === 0}
+              onClick={() => setOffset(Math.max(0, offset - PAGE_SIZE))}
+            >
+              Prev
+            </Button>
+          </div>
           <span className="text-sm text-muted-foreground">
             Page {currentPage} of {totalPages}
           </span>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={offset + PAGE_SIZE >= (data?.total ?? 0)}
-            onClick={() => setOffset(offset + PAGE_SIZE)}
-          >
-            Next
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={offset + PAGE_SIZE >= (data?.total ?? 0)}
+              onClick={() => setOffset(offset + PAGE_SIZE)}
+            >
+              Next
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={offset + PAGE_SIZE >= (data?.total ?? 0)}
+              onClick={() => setOffset((totalPages - 1) * PAGE_SIZE)}
+            >
+              Last
+            </Button>
+          </div>
         </div>
       )}
     </div>
