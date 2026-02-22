@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server"
 import type { PerformanceStats } from "@/types/memory"
 
+export const dynamic = "force-dynamic"
+
 function formatUptime(startupIso: string): string {
   const start = new Date(startupIso).getTime()
   const now = Date.now()

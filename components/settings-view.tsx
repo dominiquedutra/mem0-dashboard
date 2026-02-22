@@ -1,10 +1,12 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { RefreshCw } from "lucide-react"
 import type { DashboardSettings } from "@/types/memory"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 
 function StatusDot({ status }: { status: string }) {
   const color =
@@ -44,10 +46,17 @@ function SettingsSection({ title, children }: { title: string; children: React.R
   )
 }
 
-export default function SettingsView() {
+export default function SettingsView({
+  refreshKey,
+  onRefresh,
+}: {
+  refreshKey?: number
+  onRefresh?: () => void
+}) {
   const [settings, setSettings] = useState<DashboardSettings | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [refreshing, setRefreshing] = useState(false)
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -61,11 +70,12 @@ export default function SettingsView() {
         setError(err instanceof Error ? err.message : "Unknown error")
       } finally {
         setLoading(false)
+        setRefreshing(false)
       }
     }
 
     fetchSettings()
-  }, [])
+  }, [refreshKey])
 
   if (loading) {
     return (
@@ -105,6 +115,21 @@ export default function SettingsView() {
 
   return (
     <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold">Settings</h2>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7"
+          onClick={() => {
+            setRefreshing(true)
+            onRefresh?.()
+          }}
+          title="Refresh settings"
+        >
+          <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+        </Button>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <SettingsSection title="mem0 Configuration">
           <SettingRow label="Embedder Model" value={settings.mem0.embedder_model} />

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react"
 import { motion } from "framer-motion"
-import { Search } from "lucide-react"
+import { Search, RefreshCw } from "lucide-react"
 import type { MemoriesResponse } from "@/types/memory"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -12,15 +12,18 @@ import MemoryCard from "@/components/memory-card"
 
 interface MemoryListProps {
   agent: string | null
+  refreshKey?: number
+  onRefresh?: () => void
 }
 
 const PAGE_SIZE = 20
 
-export default function MemoryList({ agent }: MemoryListProps) {
+export default function MemoryList({ agent, refreshKey, onRefresh }: MemoryListProps) {
   const [data, setData] = useState<MemoriesResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
   const [offset, setOffset] = useState(0)
+  const [refreshing, setRefreshing] = useState(false)
 
   useEffect(() => {
     setOffset(0)
@@ -46,10 +49,11 @@ export default function MemoryList({ agent }: MemoryListProps) {
         setData(null)
       } finally {
         setLoading(false)
+        setRefreshing(false)
       }
     }
     fetchMemories()
-  }, [agent, offset])
+  }, [agent, offset, refreshKey])
 
   const filtered = useMemo(() => {
     if (!data) return []
@@ -89,14 +93,28 @@ export default function MemoryList({ agent }: MemoryListProps) {
 
   return (
     <div className="space-y-4">
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search memories..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-10"
-        />
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search memories..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-10 w-10 shrink-0"
+          onClick={() => {
+            setRefreshing(true)
+            onRefresh?.()
+          }}
+          title="Refresh memories"
+        >
+          <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+        </Button>
       </div>
 
       <p className="text-sm text-muted-foreground">

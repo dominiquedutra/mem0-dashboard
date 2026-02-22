@@ -1,22 +1,30 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import type { PerformanceStats } from "@/types/memory"
+import { useEffect, useState, useRef } from "react"
+import { RefreshCw } from "lucide-react"
+import type { PerformanceStats, SearchSnapshot } from "@/types/memory"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Button } from "@/components/ui/button"
 import ActivityChart from "@/components/activity-chart"
 import Mem0HealthView from "@/components/mem0-health"
 import StorageStatsView from "@/components/storage-stats"
 import GrowthChart from "@/components/growth-chart"
+import SearchActivityChart from "@/components/search-activity-chart"
 
 export default function PerformanceStatsView({
-  refreshInterval = 60000,
+  refreshKey,
+  onRefresh,
 }: {
-  refreshInterval?: number
+  refreshKey?: number
+  onRefresh?: () => void
 }) {
   const [stats, setStats] = useState<PerformanceStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [refreshing, setRefreshing] = useState(false)
+  const [searchSnapshots, setSearchSnapshots] = useState<SearchSnapshot[]>([])
+  const prevRefreshKey = useRef(refreshKey)
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -26,17 +34,28 @@ export default function PerformanceStatsView({
         const data: PerformanceStats = await res.json()
         setStats(data)
         setError(null)
+
+        // Track search snapshots for the chart
+        setSearchSnapshots((prev) => [
+          ...prev,
+          { time: Date.now(), total: data.search.total_calls },
+        ])
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error")
       } finally {
         setLoading(false)
+        setRefreshing(false)
       }
     }
 
     fetchStats()
-    const timer = setInterval(fetchStats, refreshInterval)
-    return () => clearInterval(timer)
-  }, [refreshInterval])
+    prevRefreshKey.current = refreshKey
+  }, [refreshKey])
+
+  const handleRefresh = () => {
+    setRefreshing(true)
+    onRefresh?.()
+  }
 
   if (loading) {
     return (
@@ -70,12 +89,23 @@ export default function PerformanceStatsView({
   return (
     <div className="space-y-6">
       {/* mem0 Health Section */}
-      <Mem0HealthView refreshInterval={refreshInterval} />
+      <Mem0HealthView refreshKey={refreshKey} />
 
       {/* Qdrant Infrastructure */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Qdrant Infrastructure</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-lg font-semibold">Qdrant Infrastructure</h2>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7"
+              onClick={handleRefresh}
+              title="Refresh performance data"
+            >
+              <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+            </Button>
+          </div>
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
             <span>Qdrant v{stats.qdrant.version}</span>
             <span>Uptime: {stats.qdrant.uptime_human}</span>
@@ -85,7 +115,7 @@ export default function PerformanceStatsView({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <StatCard label="Searches" value={stats.search.total_calls.toLocaleString()} sub={`avg ${stats.search.avg_latency_ms.toFixed(1)}ms`} />
           <StatCard label="Writes" value={stats.writes.total_calls.toLocaleString()} sub={`avg ${stats.writes.avg_latency_ms.toFixed(1)}ms`} />
-          <StatCard label="Success Rate" value={`${(stats.search.success_rate * 100).toFixed(1)}%`} sub={`${stats.search.errors} errors`} />
+          <StatCard label="Success Rate" value={`${stats.search.success_rate.toFixed(1)}%`} sub={`${stats.search.errors} errors`} />
           <StatCard label="Deletes" value={stats.writes.deletes.toLocaleString()} />
           <StatCard label="Payload Updates" value={stats.writes.payload_updates.toLocaleString()} />
           <StatCard label="Vectors" value={stats.vectors.total.toLocaleString()} />
@@ -96,12 +126,15 @@ export default function PerformanceStatsView({
         </p>
       </div>
 
+      {/* Search Activity Chart */}
+      <SearchActivityChart snapshots={searchSnapshots} />
+
       {/* Charts */}
-      <ActivityChart refreshInterval={refreshInterval} />
-      <GrowthChart refreshInterval={refreshInterval} />
+      <ActivityChart refreshKey={refreshKey} />
+      <GrowthChart refreshKey={refreshKey} />
 
       {/* Storage & Capacity */}
-      <StorageStatsView refreshInterval={refreshInterval} />
+      <StorageStatsView refreshKey={refreshKey} />
     </div>
   )
 }

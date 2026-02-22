@@ -3,6 +3,8 @@ import { getQdrantClient, getCollection } from "@/lib/qdrant"
 import { resolveAgent } from "@/lib/memory"
 import type { RawQdrantPayload } from "@/types/memory"
 
+export const dynamic = "force-dynamic"
+
 export async function GET() {
   try {
     // If AGENTS env var is set, use it directly

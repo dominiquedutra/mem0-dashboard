@@ -2,6 +2,8 @@ import { NextResponse } from "next/server"
 import { getQdrantClient, getCollection } from "@/lib/qdrant"
 import { agentFilter } from "@/lib/memory"
 
+export const dynamic = "force-dynamic"
+
 export async function GET() {
   try {
     const client = getQdrantClient()

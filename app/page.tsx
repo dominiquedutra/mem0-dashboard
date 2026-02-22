@@ -12,7 +12,30 @@ import PerformanceStatsView from "@/components/performance-stats"
 import SettingsView from "@/components/settings-view"
 import { Brain } from "lucide-react"
 
-type View = "memories" | "performance" | "settings"
+type View = "memories" | "performance" | "settings" | "explorer"
+
+const VALID_VIEWS: View[] = ["memories", "performance", "settings", "explorer"]
+
+function parseHash(): { view: View; agent: string | null } {
+  if (typeof window === "undefined") return { view: "memories", agent: null }
+  const hash = window.location.hash.replace("#", "")
+  const [viewPart, queryPart] = hash.split("?")
+  const view = VALID_VIEWS.includes(viewPart as View) ? (viewPart as View) : "memories"
+  let agent: string | null = null
+  if (queryPart) {
+    const params = new URLSearchParams(queryPart)
+    agent = params.get("agent") || null
+  }
+  return { view, agent }
+}
+
+function updateHash(view: View, agent: string | null) {
+  let hash = `#${view}`
+  if (agent) hash += `?agent=${encodeURIComponent(agent)}`
+  if (window.location.hash !== hash) {
+    window.history.replaceState(null, "", hash)
+  }
+}
 
 export default function Dashboard() {
   const [stats, setStats] = useState<StatsResponse | null>(null)
@@ -21,6 +44,30 @@ export default function Dashboard() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [activeView, setActiveView] = useState<View>("memories")
   const [agents, setAgents] = useState<string[]>([])
+  const [refreshKey, setRefreshKey] = useState(0)
+
+  // Read initial state from URL hash
+  useEffect(() => {
+    const { view, agent } = parseHash()
+    setActiveView(view)
+    if (agent) setSelectedAgent(agent)
+  }, [])
+
+  // Sync hash on view/agent change
+  useEffect(() => {
+    updateHash(activeView, selectedAgent)
+  }, [activeView, selectedAgent])
+
+  // Listen for browser back/forward
+  useEffect(() => {
+    const onHashChange = () => {
+      const { view, agent } = parseHash()
+      setActiveView(view)
+      if (agent !== undefined) setSelectedAgent(agent)
+    }
+    window.addEventListener("hashchange", onHashChange)
+    return () => window.removeEventListener("hashchange", onHashChange)
+  }, [])
 
   const fetchStats = useCallback(async () => {
     try {
@@ -45,21 +92,39 @@ export default function Dashboard() {
     }
   }, [])
 
+  // Initial fetch
   useEffect(() => {
     fetchStats()
     fetchAgents()
-
-    const interval = setInterval(() => {
-      fetchStats()
-    }, 60000)
-
-    return () => clearInterval(interval)
   }, [fetchStats, fetchAgents])
+
+  // Single centralized auto-refresh interval
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRefreshKey((k) => k + 1)
+    }, 60000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Re-fetch stats whenever refreshKey changes (skip initial mount)
+  useEffect(() => {
+    if (refreshKey > 0) {
+      fetchStats()
+      fetchAgents()
+    }
+  }, [refreshKey, fetchStats, fetchAgents])
 
   const handleRefresh = () => {
     setStatsLoading(true)
-    fetchStats()
+    setRefreshKey((k) => k + 1)
   }
+
+  const viewTabs: { key: View; label: string }[] = [
+    { key: "memories", label: "Memories" },
+    { key: "explorer", label: "Explorer" },
+    { key: "performance", label: "Performance" },
+    { key: "settings", label: "Settings" },
+  ]
 
   return (
     <div className="min-h-screen bg-background">
@@ -82,36 +147,19 @@ export default function Dashboard() {
 
         {/* View Tabs */}
         <div className="flex items-center gap-1 border-b border-border">
-          <button
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-              activeView === "memories"
-                ? "text-foreground border-primary"
-                : "text-muted-foreground border-transparent hover:text-foreground"
-            }`}
-            onClick={() => setActiveView("memories")}
-          >
-            Memories
-          </button>
-          <button
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-              activeView === "performance"
-                ? "text-foreground border-primary"
-                : "text-muted-foreground border-transparent hover:text-foreground"
-            }`}
-            onClick={() => setActiveView("performance")}
-          >
-            Performance
-          </button>
-          <button
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-              activeView === "settings"
-                ? "text-foreground border-primary"
-                : "text-muted-foreground border-transparent hover:text-foreground"
-            }`}
-            onClick={() => setActiveView("settings")}
-          >
-            Settings
-          </button>
+          {viewTabs.map((tab) => (
+            <button
+              key={tab.key}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                activeView === tab.key
+                  ? "text-foreground border-primary"
+                  : "text-muted-foreground border-transparent hover:text-foreground"
+              }`}
+              onClick={() => setActiveView(tab.key)}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
         {activeView === "memories" && (
@@ -124,20 +172,21 @@ export default function Dashboard() {
                 selected={selectedAgent}
                 onSelect={setSelectedAgent}
               />
-              <MemoryList agent={selectedAgent} />
+              <MemoryList agent={selectedAgent} refreshKey={refreshKey} onRefresh={handleRefresh} />
             </div>
 
             {/* Sidebar */}
             <div className="space-y-6">
-              <ActivityFeed />
-              <QueryExplorer />
+              <ActivityFeed refreshKey={refreshKey} />
             </div>
           </div>
         )}
 
-        {activeView === "performance" && <PerformanceStatsView />}
+        {activeView === "explorer" && <QueryExplorer agents={agents} />}
 
-        {activeView === "settings" && <SettingsView />}
+        {activeView === "performance" && <PerformanceStatsView refreshKey={refreshKey} onRefresh={handleRefresh} />}
+
+        {activeView === "settings" && <SettingsView refreshKey={refreshKey} onRefresh={handleRefresh} />}
       </main>
     </div>
   )

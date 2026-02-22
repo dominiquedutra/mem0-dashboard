@@ -141,6 +141,11 @@ export interface GrowthResponse {
   agents: Record<string, Array<{ date: string; added: number }>>
 }
 
+export interface SearchSnapshot {
+  time: number
+  total: number
+}
+
 export interface PerformanceStats {
   qdrant: {
     version: string
