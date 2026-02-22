@@ -52,7 +52,7 @@ describe("GET /api/settings", () => {
 
     process.env = {
       ...originalEnv,
-      QDRANT_URL: "http://10.15.30.2:6333",
+      QDRANT_URL: "http://qdrant.example.com:6333",
       QDRANT_COLLECTION: "openclaw-memories",
       OPENAI_EMBEDDING_MODEL: "text-embedding-3-small",
       AGENTS: "clawd, norma, ana",
@@ -110,7 +110,7 @@ describe("GET /api/settings", () => {
     expect(json.mem0.distance_metric).toBe("Cosine")
 
     // qdrant section
-    expect(json.qdrant.url).toBe("http://10.15.30.2:6333")
+    expect(json.qdrant.url).toBe("http://qdrant.example.com:6333")
     expect(json.qdrant.collection).toBe("test-collection")
     expect(json.qdrant.status).toBe("green")
     expect(json.qdrant.auth_enabled).toBe(false)
