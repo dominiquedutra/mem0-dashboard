@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import type { PerformanceStats } from "@/types/memory"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import ActivityChart from "@/components/activity-chart"
 
 export default function PerformanceStatsView({
   refreshInterval = 60000,
@@ -81,6 +82,8 @@ export default function PerformanceStatsView({
         <StatCard label="Payload Updates" value={stats.writes.payload_updates.toLocaleString()} />
         <StatCard label="Vectors" value={stats.vectors.total.toLocaleString()} />
       </div>
+
+      <ActivityChart refreshInterval={refreshInterval} />
 
       <p className="text-xs text-muted-foreground">
         Stats since last Qdrant restart ({stats.qdrant.uptime_since ? new Date(stats.qdrant.uptime_since).toLocaleString() : "unknown"})

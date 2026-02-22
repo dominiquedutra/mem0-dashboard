@@ -46,6 +46,12 @@ export interface ExploreResponse {
   results: ExploreResult[]
 }
 
+export interface TimelineBucket {
+  time: string
+  total: number
+  [agent: string]: number | string
+}
+
 export interface PerformanceStats {
   qdrant: {
     version: string
