@@ -110,17 +110,7 @@ export default function SettingsView() {
           <SettingRow label="Embedder Model" value={settings.mem0.embedder_model} />
           <SettingRow label="Embedding Dimensions" value={settings.mem0.embedding_dimensions} />
           <SettingRow label="Distance Metric" value={settings.mem0.distance_metric} />
-          <SettingRow
-            label="LLM Extractor"
-            value={settings.mem0.llm_extractor}
-            muted={isMuted(settings.mem0.llm_extractor)}
-          />
           <SettingRow label="Min Score" value={settings.mem0.min_score} />
-          <SettingRow
-            label="Sync Window"
-            value={settings.mem0.sync_window}
-            muted={isMuted(settings.mem0.sync_window)}
-          />
         </SettingsSection>
 
         <SettingsSection title="Qdrant Connection">

@@ -112,9 +112,7 @@ export interface DashboardSettings {
     embedder_model: string
     embedding_dimensions: number
     distance_metric: string
-    llm_extractor: string
     min_score: number
-    sync_window: string
   }
   qdrant: {
     url: string

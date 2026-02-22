@@ -172,26 +172,6 @@ describe("GET /api/settings", () => {
     expect(json.mem0.distance_metric).toBe("Euclid")
   })
 
-  it("shows 'unknown' for LLM_MODEL when not set", async () => {
-    delete process.env.LLM_MODEL
-
-    const { GET } = await loadRoute()
-    const res = await GET()
-    const json = await res.json()
-
-    expect(json.mem0.llm_extractor).toBe("unknown")
-  })
-
-  it("shows 'not configured' for SYNC_WINDOW when not set", async () => {
-    delete process.env.SYNC_WINDOW
-
-    const { GET } = await loadRoute()
-    const res = await GET()
-    const json = await res.json()
-
-    expect(json.mem0.sync_window).toBe("not configured")
-  })
-
   it("parses AGENTS string correctly (trims spaces)", async () => {
     process.env.AGENTS = "  alice , bob ,  charlie  "
 

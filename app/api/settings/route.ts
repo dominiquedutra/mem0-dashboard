@@ -38,9 +38,7 @@ export async function GET() {
         embedder_model: process.env.OPENAI_EMBEDDING_MODEL ?? "text-embedding-3-small",
         embedding_dimensions: (vectors && typeof vectors.size === "number") ? vectors.size : 0,
         distance_metric: (vectors && typeof vectors.distance === "string") ? vectors.distance : "unknown",
-        llm_extractor: process.env.LLM_MODEL ?? "unknown",
         min_score: parseFloat(process.env.MIN_SCORE ?? "0.2"),
-        sync_window: process.env.SYNC_WINDOW ?? "not configured",
       },
       qdrant: {
         url: qdrantUrl,
