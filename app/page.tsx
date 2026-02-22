@@ -9,9 +9,10 @@ import ActivityFeed from "@/components/activity-feed"
 import QueryExplorer from "@/components/query-explorer"
 import LiveIndicator from "@/components/live-indicator"
 import PerformanceStatsView from "@/components/performance-stats"
+import SettingsView from "@/components/settings-view"
 import { Brain } from "lucide-react"
 
-type View = "memories" | "performance"
+type View = "memories" | "performance" | "settings"
 
 export default function Dashboard() {
   const [stats, setStats] = useState<StatsResponse | null>(null)
@@ -101,9 +102,19 @@ export default function Dashboard() {
           >
             Performance
           </button>
+          <button
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              activeView === "settings"
+                ? "text-foreground border-primary"
+                : "text-muted-foreground border-transparent hover:text-foreground"
+            }`}
+            onClick={() => setActiveView("settings")}
+          >
+            Settings
+          </button>
         </div>
 
-        {activeView === "memories" ? (
+        {activeView === "memories" && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-4">
@@ -122,9 +133,11 @@ export default function Dashboard() {
               <QueryExplorer />
             </div>
           </div>
-        ) : (
-          <PerformanceStatsView />
         )}
+
+        {activeView === "performance" && <PerformanceStatsView />}
+
+        {activeView === "settings" && <SettingsView />}
       </main>
     </div>
   )

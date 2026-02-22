@@ -5,6 +5,9 @@ import type { PerformanceStats } from "@/types/memory"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import ActivityChart from "@/components/activity-chart"
+import Mem0HealthView from "@/components/mem0-health"
+import StorageStatsView from "@/components/storage-stats"
+import GrowthChart from "@/components/growth-chart"
 
 export default function PerformanceStatsView({
   refreshInterval = 60000,
@@ -65,29 +68,40 @@ export default function PerformanceStatsView({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Performance</h2>
-        <div className="flex items-center gap-3 text-sm text-muted-foreground">
-          <span>Qdrant v{stats.qdrant.version}</span>
-          <span>Uptime: {stats.qdrant.uptime_human}</span>
+    <div className="space-y-6">
+      {/* mem0 Health Section */}
+      <Mem0HealthView refreshInterval={refreshInterval} />
+
+      {/* Qdrant Infrastructure */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Qdrant Infrastructure</h2>
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <span>Qdrant v{stats.qdrant.version}</span>
+            <span>Uptime: {stats.qdrant.uptime_human}</span>
+          </div>
         </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <StatCard label="Searches" value={stats.search.total_calls.toLocaleString()} sub={`avg ${stats.search.avg_latency_ms.toFixed(1)}ms`} />
+          <StatCard label="Writes" value={stats.writes.total_calls.toLocaleString()} sub={`avg ${stats.writes.avg_latency_ms.toFixed(1)}ms`} />
+          <StatCard label="Success Rate" value={`${(stats.search.success_rate * 100).toFixed(1)}%`} sub={`${stats.search.errors} errors`} />
+          <StatCard label="Deletes" value={stats.writes.deletes.toLocaleString()} />
+          <StatCard label="Payload Updates" value={stats.writes.payload_updates.toLocaleString()} />
+          <StatCard label="Vectors" value={stats.vectors.total.toLocaleString()} />
+        </div>
+
+        <p className="text-xs text-muted-foreground">
+          Stats since last Qdrant restart ({stats.qdrant.uptime_since ? new Date(stats.qdrant.uptime_since).toLocaleString() : "unknown"})
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <StatCard label="Searches" value={stats.search.total_calls.toLocaleString()} sub={`avg ${stats.search.avg_latency_ms.toFixed(1)}ms`} />
-        <StatCard label="Writes" value={stats.writes.total_calls.toLocaleString()} sub={`avg ${stats.writes.avg_latency_ms.toFixed(1)}ms`} />
-        <StatCard label="Success Rate" value={`${(stats.search.success_rate * 100).toFixed(1)}%`} sub={`${stats.search.errors} errors`} />
-        <StatCard label="Deletes" value={stats.writes.deletes.toLocaleString()} />
-        <StatCard label="Payload Updates" value={stats.writes.payload_updates.toLocaleString()} />
-        <StatCard label="Vectors" value={stats.vectors.total.toLocaleString()} />
-      </div>
-
+      {/* Charts */}
       <ActivityChart refreshInterval={refreshInterval} />
+      <GrowthChart refreshInterval={refreshInterval} />
 
-      <p className="text-xs text-muted-foreground">
-        Stats since last Qdrant restart ({stats.qdrant.uptime_since ? new Date(stats.qdrant.uptime_since).toLocaleString() : "unknown"})
-      </p>
+      {/* Storage & Capacity */}
+      <StorageStatsView refreshInterval={refreshInterval} />
     </div>
   )
 }
