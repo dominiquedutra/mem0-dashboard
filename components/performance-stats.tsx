@@ -1,8 +1,8 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState } from "react"
 import { RefreshCw } from "lucide-react"
-import type { PerformanceStats, SearchSnapshot } from "@/types/memory"
+import type { PerformanceStats } from "@/types/memory"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
@@ -10,7 +10,7 @@ import ActivityChart from "@/components/activity-chart"
 import Mem0HealthView from "@/components/mem0-health"
 import StorageStatsView from "@/components/storage-stats"
 import GrowthChart from "@/components/growth-chart"
-import SearchActivityChart from "@/components/search-activity-chart"
+import SearchActivityChart, { pushSnapshot, getSnapshots } from "@/components/search-activity-chart"
 
 export default function PerformanceStatsView({
   refreshKey,
@@ -23,8 +23,7 @@ export default function PerformanceStatsView({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
-  const [searchSnapshots, setSearchSnapshots] = useState<SearchSnapshot[]>([])
-  const prevRefreshKey = useRef(refreshKey)
+  const [snapshotVersion, setSnapshotVersion] = useState(0)
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -35,11 +34,9 @@ export default function PerformanceStatsView({
         setStats(data)
         setError(null)
 
-        // Track search snapshots for the chart
-        setSearchSnapshots((prev) => [
-          ...prev,
-          { time: Date.now(), total: data.search.total_calls },
-        ])
+        // Push to module-level storage (survives tab switches)
+        pushSnapshot({ time: Date.now(), total: data.search.total_calls })
+        setSnapshotVersion((v) => v + 1)
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error")
       } finally {
@@ -49,7 +46,6 @@ export default function PerformanceStatsView({
     }
 
     fetchStats()
-    prevRefreshKey.current = refreshKey
   }, [refreshKey])
 
   const handleRefresh = () => {
@@ -126,8 +122,13 @@ export default function PerformanceStatsView({
         </p>
       </div>
 
-      {/* Search Activity Chart */}
-      <SearchActivityChart snapshots={searchSnapshots} />
+      {/* Search & Write Rates */}
+      <SearchActivityChart
+        uptimeSince={stats.qdrant.uptime_since}
+        totalSearches={stats.search.total_calls}
+        totalWrites={stats.writes.total_calls}
+        snapshots={getSnapshots()}
+      />
 
       {/* Charts */}
       <ActivityChart refreshKey={refreshKey} />
