@@ -38,7 +38,9 @@ export default function MemoryList({ agent }: MemoryListProps) {
         if (agent) params.set("agent", agent)
 
         const res = await fetch(`/api/memories?${params}`)
+        if (!res.ok) throw new Error("API error")
         const json: MemoriesResponse = await res.json()
+        if (!json.memories) throw new Error("Invalid response")
         setData(json)
       } catch {
         setData(null)
@@ -72,6 +74,15 @@ export default function MemoryList({ agent }: MemoryListProps) {
             <Skeleton className="h-4 w-3/4" />
           </Card>
         ))}
+      </div>
+    )
+  }
+
+  if (!data) {
+    return (
+      <div className="text-center py-12 text-muted-foreground">
+        <p>Unable to load memories.</p>
+        <p className="text-xs mt-1">Check that Qdrant is reachable via QDRANT_URL</p>
       </div>
     )
   }

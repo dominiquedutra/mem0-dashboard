@@ -58,7 +58,7 @@ export default function StatsHeader({ stats, loading }: StatsHeaderProps) {
     )
   }
 
-  if (!stats) return null
+  if (!stats || !stats.agents) return null
 
   const agents = Object.entries(stats.agents)
 
