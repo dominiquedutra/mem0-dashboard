@@ -3,16 +3,11 @@
 import type { StatsResponse } from "@/types/memory"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { getAgentTailwindClass } from "@/lib/colors"
 
 interface StatsHeaderProps {
   stats: StatsResponse | null
   loading: boolean
-}
-
-const agentColors: Record<string, string> = {
-  clawd: "text-blue-400",
-  ana: "text-green-400",
-  norma: "text-orange-400",
 }
 
 function StatCard({
@@ -60,17 +55,43 @@ export default function StatsHeader({ stats, loading }: StatsHeaderProps) {
 
   if (!stats || !stats.agents) return null
 
-  const agents = Object.entries(stats.agents)
+  // Sort agents by count descending
+  const sorted = Object.entries(stats.agents).sort(([, a], [, b]) => b - a)
+
+  // Always 4 cards: Total + 3 agent slots
+  // If <=3 agents, show them all. If >3, show top 2 + "Others" (rest combined).
+  let displayCards: Array<{ label: string; count: number; colorClass: string }>
+
+  if (sorted.length <= 3) {
+    displayCards = sorted.map(([agent, count]) => ({
+      label: agent,
+      count,
+      colorClass: getAgentTailwindClass(agent),
+    }))
+  } else {
+    const top2 = sorted.slice(0, 2)
+    const rest = sorted.slice(2)
+    const othersCount = rest.reduce((sum, [, count]) => sum + count, 0)
+
+    displayCards = [
+      ...top2.map(([agent, count]) => ({
+        label: agent,
+        count,
+        colorClass: getAgentTailwindClass(agent),
+      })),
+      { label: "Others", count: othersCount, colorClass: "text-gray-400" },
+    ]
+  }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
       <StatCard label="Total" count={stats.total} />
-      {agents.map(([agent, count]) => (
+      {displayCards.map(({ label, count, colorClass }) => (
         <StatCard
-          key={agent}
-          label={agent}
+          key={label}
+          label={label}
           count={count}
-          colorClass={agentColors[agent] ?? "text-gray-400"}
+          colorClass={colorClass}
         />
       ))}
     </div>

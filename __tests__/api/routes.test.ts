@@ -131,18 +131,27 @@ describe("GET /api/stats", () => {
     expect(body.lastUpdated).toBeDefined()
   })
 
-  it("uses default agents when AGENTS env is unset", async () => {
+  it("auto-detects agents when AGENTS env is unset", async () => {
+    // discoverAgents() will scroll Qdrant to find agents
+    mockScroll.mockResolvedValue(
+      scrollResponse([
+        makePoint("id-1", payloadNew),   // clawd
+        makePoint("id-2", payloadOld),   // ana
+        makePoint("id-4", payloadStale), // norma
+      ]),
+    )
+
     mockCount
-      .mockResolvedValueOnce({ count: 10 })
-      .mockResolvedValueOnce({ count: 20 })
-      .mockResolvedValueOnce({ count: 30 })
+      .mockResolvedValueOnce({ count: 20 }) // ana (sorted first)
+      .mockResolvedValueOnce({ count: 10 }) // clawd
+      .mockResolvedValueOnce({ count: 30 }) // norma
 
     const { GET } = await import("@/app/api/stats/route")
     const res = await GET()
     const body = await res.json()
 
     expect(body.total).toBe(60)
-    expect(body.agents).toEqual({ clawd: 10, ana: 20, norma: 30 })
+    expect(body.agents).toEqual({ ana: 20, clawd: 10, norma: 30 })
   })
 
   it("returns 500 on Qdrant error", async () => {

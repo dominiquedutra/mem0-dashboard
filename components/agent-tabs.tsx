@@ -2,18 +2,13 @@
 
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
+import { getAgentTabClasses } from "@/lib/colors"
 
 interface AgentTabsProps {
   agents: string[]
   counts: Record<string, number>
   selected: string | null
   onSelect: (agent: string | null) => void
-}
-
-const agentTabColors: Record<string, string> = {
-  clawd: "data-[active=true]:text-blue-400 data-[active=true]:border-blue-400",
-  ana: "data-[active=true]:text-green-400 data-[active=true]:border-green-400",
-  norma: "data-[active=true]:text-orange-400 data-[active=true]:border-orange-400",
 }
 
 export default function AgentTabs({
@@ -49,8 +44,7 @@ export default function AgentTabs({
           className={cn(
             "px-4 py-2 text-sm font-medium capitalize border-b-2 border-transparent transition-colors",
             "hover:text-foreground text-muted-foreground",
-            agentTabColors[agent] ??
-              "data-[active=true]:text-gray-400 data-[active=true]:border-gray-400"
+            getAgentTabClasses(agent)
           )}
           onClick={() => onSelect(agent)}
         >

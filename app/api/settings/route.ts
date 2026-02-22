@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { getQdrantClient, getCollection } from "@/lib/qdrant"
+import { discoverAgents } from "@/lib/memory"
 import type { DashboardSettings } from "@/types/memory"
 
 export const dynamic = "force-dynamic"
@@ -23,10 +24,7 @@ export async function GET() {
       // telemetry fetch failed, keep version as "unknown"
     }
 
-    const agentsEnv = process.env.AGENTS
-    const agents = agentsEnv
-      ? agentsEnv.split(",").map((a) => a.trim()).filter(Boolean)
-      : ["clawd", "ana", "norma"]
+    const agents = await discoverAgents()
 
     // vectors can be a direct config object or a named map
     const vectors = collectionInfo.config?.params?.vectors as

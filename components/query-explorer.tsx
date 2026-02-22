@@ -9,13 +9,7 @@ import { Select } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-
-const AGENT_COLORS: Record<string, string> = {
-  clawd: "#3b82f6",
-  ana: "#22c55e",
-  norma: "#f97316",
-  unknown: "#6b7280",
-}
+import { getAgentColor } from "@/lib/colors"
 
 function scoreColor(score: number): string {
   if (score >= 0.7) return "text-green-400"
@@ -31,7 +25,7 @@ function scoreBarColor(score: number): string {
 
 function ResultItem({ result }: { result: ExploreResult }) {
   const pct = Math.round(result.score * 100)
-  const agentColor = AGENT_COLORS[result.agent] ?? AGENT_COLORS.unknown
+  const agentColor = getAgentColor(result.agent)
 
   return (
     <Card>

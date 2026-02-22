@@ -1,3 +1,8 @@
+jest.mock("@/lib/qdrant", () => ({
+  getQdrantClient: jest.fn(),
+  getCollection: jest.fn(),
+}))
+
 import {
   resolveAgent,
   resolveTimestamp,

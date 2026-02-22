@@ -13,13 +13,7 @@ import {
 import type { TimelineBucket } from "@/types/memory"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-
-const AGENT_COLORS: Record<string, string> = {
-  clawd: "#3b82f6",
-  ana: "#22c55e",
-  norma: "#f97316",
-  unknown: "#6b7280",
-}
+import { getAgentColor } from "@/lib/colors"
 
 type TimeRange = "24h" | "7d"
 
@@ -220,7 +214,7 @@ export default function ActivityChart({
                   key={agent}
                   dataKey={agent}
                   stackId="memories"
-                  fill={AGENT_COLORS[agent] ?? AGENT_COLORS.unknown}
+                  fill={getAgentColor(agent)}
                   radius={
                     agent === agents[agents.length - 1]
                       ? [2, 2, 0, 0]
@@ -239,7 +233,7 @@ export default function ActivityChart({
                   className="inline-block h-2.5 w-2.5 rounded-sm"
                   style={{
                     backgroundColor:
-                      AGENT_COLORS[agent] ?? AGENT_COLORS.unknown,
+                      getAgentColor(agent),
                   }}
                 />
                 <span className="text-zinc-400">{agent}</span>

@@ -29,10 +29,12 @@ jest.mock("next/server", () => ({
 // ---------- qdrant mock ----------
 
 const mockGetCollectionInfo = jest.fn()
+const mockScroll = jest.fn()
 
 jest.mock("@/lib/qdrant", () => ({
   getQdrantClient: jest.fn(() => ({
     getCollection: mockGetCollectionInfo,
+    scroll: mockScroll,
   })),
   getCollection: jest.fn(() => "test-collection"),
 }))
@@ -129,6 +131,15 @@ describe("GET /api/settings", () => {
     delete process.env.REFRESH_INTERVAL
     delete process.env.DASHBOARD_PORT
 
+    // discoverAgents() auto-detects from Qdrant when AGENTS is unset
+    mockScroll.mockResolvedValue({
+      points: [
+        { id: "1", payload: { userId: "clawd", data: "d1", hash: "h1" } },
+        { id: "2", payload: { user_id: "ana", data: "d2", hash: "h2" } },
+      ],
+      next_page_offset: null,
+    })
+
     const { GET } = await loadRoute()
     const res = await GET()
     const json = await res.json()
@@ -137,7 +148,7 @@ describe("GET /api/settings", () => {
     expect(json.mem0.embedder_model).toBe("text-embedding-3-small")
     expect(json.qdrant.url).toBe("http://localhost:6333")
     expect(json.dashboard.refresh_interval_s).toBe(60)
-    expect(json.dashboard.agents).toEqual(["clawd", "ana", "norma"])
+    expect(json.dashboard.agents).toEqual(["ana", "clawd"])
     expect(json.dashboard.page_size).toBe(50)
     expect(json.dashboard.port).toBe(8765)
   })

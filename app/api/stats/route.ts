@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getQdrantClient, getCollection } from "@/lib/qdrant"
-import { agentFilter } from "@/lib/memory"
+import { agentFilter, discoverAgents } from "@/lib/memory"
 
 export const dynamic = "force-dynamic"
 
@@ -9,10 +9,7 @@ export async function GET() {
     const client = getQdrantClient()
     const collection = getCollection()
 
-    const agentsEnv = process.env.AGENTS
-    const agents = agentsEnv
-      ? agentsEnv.split(",").map((a) => a.trim()).filter(Boolean)
-      : ["clawd", "ana", "norma"]
+    const agents = await discoverAgents()
 
     const agentCounts: Record<string, number> = {}
     let total = 0

@@ -13,13 +13,7 @@ import {
 import type { GrowthResponse } from "@/types/memory"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-
-const AGENT_COLORS: Record<string, string> = {
-  clawd: "#3b82f6",
-  ana: "#22c55e",
-  norma: "#f97316",
-  unknown: "#6b7280",
-}
+import { getAgentColor } from "@/lib/colors"
 
 type TimeRange = "7d" | "30d" | "all"
 
@@ -214,8 +208,8 @@ export default function GrowthChart({
                   type="monotone"
                   dataKey={agent}
                   stackId="memories"
-                  stroke={AGENT_COLORS[agent] ?? AGENT_COLORS.unknown}
-                  fill={AGENT_COLORS[agent] ?? AGENT_COLORS.unknown}
+                  stroke={getAgentColor(agent)}
+                  fill={getAgentColor(agent)}
                   fillOpacity={0.4}
                 />
               ))}
@@ -230,7 +224,7 @@ export default function GrowthChart({
                   className="inline-block h-2.5 w-2.5 rounded-sm"
                   style={{
                     backgroundColor:
-                      AGENT_COLORS[agent] ?? AGENT_COLORS.unknown,
+                      getAgentColor(agent),
                   }}
                 />
                 <span className="text-zinc-400">{agent}</span>
