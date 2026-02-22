@@ -53,60 +53,73 @@ export default function PerformanceStatsView({
     onRefresh?.()
   }
 
+  const refreshButton = (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <h2 className="text-lg font-semibold">Performance</h2>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7"
+          onClick={handleRefresh}
+          title="Refresh performance data"
+        >
+          <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+        </Button>
+      </div>
+      {stats && (
+        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+          <span>Qdrant v{stats.qdrant.version}</span>
+          <span>Uptime: {stats.qdrant.uptime_human}</span>
+        </div>
+      )}
+    </div>
+  )
+
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <Card key={i}>
-            <CardHeader className="pb-2">
-              <Skeleton className="h-4 w-20" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-8 w-16 mb-1" />
-              <Skeleton className="h-3 w-24" />
-            </CardContent>
-          </Card>
-        ))}
+      <div className="space-y-4">
+        {refreshButton}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader className="pb-2">
+                <Skeleton className="h-4 w-20" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-16 mb-1" />
+                <Skeleton className="h-3 w-24" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     )
   }
 
   if (error || !stats) {
     return (
-      <Card>
-        <CardContent className="py-8 text-center text-muted-foreground">
-          <p>{error ?? "Unable to load performance stats"}</p>
-          <p className="text-xs mt-1">Make sure Qdrant is reachable</p>
-        </CardContent>
-      </Card>
+      <div className="space-y-4">
+        {refreshButton}
+        <Card>
+          <CardContent className="py-8 text-center text-muted-foreground">
+            <p>{error ?? "Unable to load performance stats"}</p>
+            <p className="text-xs mt-1">Make sure Qdrant is reachable</p>
+          </CardContent>
+        </Card>
+      </div>
     )
   }
 
   return (
     <div className="space-y-6">
+      {refreshButton}
+
       {/* mem0 Health Section */}
       <Mem0HealthView refreshKey={refreshKey} />
 
       {/* Qdrant Infrastructure */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <h2 className="text-lg font-semibold">Qdrant Infrastructure</h2>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7"
-              onClick={handleRefresh}
-              title="Refresh performance data"
-            >
-              <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
-            </Button>
-          </div>
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            <span>Qdrant v{stats.qdrant.version}</span>
-            <span>Uptime: {stats.qdrant.uptime_human}</span>
-          </div>
-        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <StatCard label="Searches" value={stats.search.total_calls.toLocaleString()} sub={`avg ${stats.search.avg_latency_ms.toFixed(1)}ms`} />

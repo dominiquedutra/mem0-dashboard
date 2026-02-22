@@ -40,23 +40,24 @@ function updateHash(view: View, agent: string | null) {
 export default function Dashboard() {
   const [stats, setStats] = useState<StatsResponse | null>(null)
   const [statsLoading, setStatsLoading] = useState(true)
-  const [selectedAgent, setSelectedAgent] = useState<string | null>(null)
+  const [selectedAgent, setSelectedAgent] = useState<string | null>(() => parseHash().agent)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
-  const [activeView, setActiveView] = useState<View>("memories")
+  const [activeView, setActiveView] = useState<View>(() => parseHash().view)
   const [agents, setAgents] = useState<string[]>([])
   const [refreshKey, setRefreshKey] = useState(0)
+  const [hashReady, setHashReady] = useState(false)
 
-  // Read initial state from URL hash
+  // Mark ready after first render so sync effect doesn't clobber initial hash
   useEffect(() => {
-    const { view, agent } = parseHash()
-    setActiveView(view)
-    if (agent) setSelectedAgent(agent)
+    setHashReady(true)
   }, [])
 
-  // Sync hash on view/agent change
+  // Sync hash on view/agent change (skip initial render)
   useEffect(() => {
-    updateHash(activeView, selectedAgent)
-  }, [activeView, selectedAgent])
+    if (hashReady) {
+      updateHash(activeView, selectedAgent)
+    }
+  }, [activeView, selectedAgent, hashReady])
 
   // Listen for browser back/forward
   useEffect(() => {
